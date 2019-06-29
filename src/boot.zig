@@ -3,6 +3,7 @@ const builtin = @import("builtin");
 const uefi = @import("uefi/uefi.zig");
 const state = @import("state.zig");
 const graphics = @import("graphics.zig");
+const gdt = @import("gdt.zig");
 
 export fn EfiMain(img: uefi.Handle, sys: *uefi.SystemTable) uefi.Status {
     state.uefi_image = img;
@@ -23,16 +24,12 @@ export fn EfiMain(img: uefi.Handle, sys: *uefi.SystemTable) uefi.Status {
                                             &map_key,
                                             &desc_size,
                                             &desc_version) != 0) {
-        _ = state.stdout.print("map size: {}\n", memory_map_size) catch unreachable;
         _ = sys.boot_services.free_pool(memory_map);
         memory_map_size += 10;
         _ = sys.boot_services.allocate_pool(uefi.MemoryType.LoaderData,
                                             @sizeOf(@typeOf(memory_map)) * memory_map_size,
                                             @ptrCast(**c_void, &memory_map));
     }
-    _ = state.stdout.print("map size final: {}\n", memory_map_size) catch unreachable;
-
-    _ = state.stdout.print("exit: {}\n", sys.boot_services.exit_boot_services(img, map_key)) catch unreachable;
 
     postExitBootServices() catch unreachable;
 
@@ -69,11 +66,12 @@ fn preExitBootServices() error{}!void {
         .red = 0,
     };
     state.stdout = graphics.TextFrame.init(frame, fg, bg);
-
-    _ = state.stdout.print("ABCDEFGHIJKL\nabcdefghijkl 1234567890\n") catch unreachable;
 }
 
 fn postExitBootServices() error{}!void {
-    _ = state.stdout.print("test\ntest\n223\r1\n") catch unreachable;
+    _ = state.stdout.print("old gdt len: {}\n", gdt.storeGdt().len) catch unreachable;
+    gdt.loadGdt();
+    _ = state.stdout.print("new gdt len: {}\n", gdt.storeGdt().len) catch unreachable;
+
     while (true) {}
 }
