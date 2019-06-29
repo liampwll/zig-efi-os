@@ -63,32 +63,9 @@ pub fn loadGdt() void {
     loadGdtInternal(&our_gdtr, 1 * 8, 2 * 8);
 }
 
-comptime {
-    asm (
-        \\storeGdtInternal:
-        \\    add $6, %rcx
-        \\    sgdt (%rcx)
-        \\    ret
 
-        \\loadGdtInternal:
-        \\    sti
-        \\    add $6, %rcx
-        \\    lgdt (%rcx)
-        \\    mov %r8w, %ds
-        \\    mov %r8w, %es
-        \\    mov %r8w, %fs
-        \\    mov %r8w, %gs
-        \\    mov %r8w, %ss
-        \\    and $0xFFFF, %rdx
-        \\    pushq %rdx
-        \\    lea loadGdtInternal.changeSegmentTarget(%rip), %rax
-        \\    pushq %rax
-        \\    lretq
-        \\loadGdtInternal.changeSegmentTarget:
-        \\    cli
-        \\    ret
-    );
-}
+const storeGdtInternal = gdt_storeGdtInternal;
+const loadGdtInternal = gdt_loadGdtInternal;
 
-extern fn storeGdtInternal(r: *Gdtr) void;
-extern fn loadGdtInternal(r: *Gdtr, cs: u16, ds: u16) void;
+extern fn gdt_storeGdtInternal(r: *Gdtr) void;
+extern fn gdt_loadGdtInternal(r: *Gdtr, cs: u16, ds: u16) void;
