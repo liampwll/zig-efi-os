@@ -1,4 +1,4 @@
-pub const NotYetImplementedFn = extern fn() void;
+pub const NotYetImplementedFn = extern fn(*@OpaqueType()) *@OpaqueType();
 
 pub const Guid = extern struct {
     pub fn guid(data1: u32, data2: u16, data3: u16, data4: [8]u8) Guid {
