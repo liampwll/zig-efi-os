@@ -32,12 +32,12 @@ const Entry = union(enum) {
                 | 0b10 << 43
                 | u64(self.dpl) << 45
                 | u64(@boolToInt(self.present)) << 47
-                | u64(self.limit & 0xF0000) << 48
+                | u64(self.limit >> 16 & 0xF) << 48
                 | u64(@boolToInt(self.available_to_system_programmers)) << 52
                 | 0b0 << 53
                 | u64(@boolToInt(self.big)) << 54
                 | u64(@enumToInt(self.granularity)) << 55
-                | u64(self.base & 0xFF000000) << 56;
+                | u64(self.base >> 24 & 0xFF) << 56;
         }
     };
 
@@ -75,11 +75,11 @@ const Entry = union(enum) {
                 | 0b11 << 43
                 | u64(self.dpl) << 45
                 | u64(@boolToInt(self.present)) << 47
-                | u64(self.limit & 0xF0000) << 48
+                | u64(self.limit >> 16 & 0xF) << 48
                 | u64(@boolToInt(self.available_to_system_programmers)) << 52
                 | u64(@enumToInt(self.mode)) << 53
                 | u64(@enumToInt(self.granularity)) << 55
-                | u64(self.base & 0xFF000000) << 56;
+                | u64(self.base >> 24 & 0xFF) << 56;
         }
     };
 
@@ -114,10 +114,10 @@ const Entry = union(enum) {
                 | 0b0 << 44
                 | u64(self.dpl) << 45
                 | u64(@boolToInt(self.present)) << 47
-                | u64(self.limit & 0xF0000) << 48
+                | u64(self.limit >> 16 & 0xF) << 48
                 | 0b000 << 52
                 | u64(@enumToInt(self.granularity)) << 55
-                | u64(self.base & 0xFF000000) << 56;
+                | u64(self.base >> 24 & 0xFF) << 56;
         }
     };
 
