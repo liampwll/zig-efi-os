@@ -1,4 +1,4 @@
-const Entry = union(enum) {
+pub const Entry = union(enum) {
     const DataS = struct {
         const Self = @This();
 
@@ -38,6 +38,21 @@ const Entry = union(enum) {
                 | u64(@boolToInt(self.big)) << 54
                 | u64(@enumToInt(self.granularity)) << 55
                 | u64(self.base >> 24 & 0xFF) << 56;
+        }
+
+        fn unpack(e: u64) Self {
+            return Self{
+                .limit = @intCast(u20, e >> 0 & 0xFFFF | (e >> 48 & 0xF) << 16),
+                .base = @intCast(u32, e >> 16 & 0xFFFFFF | (e >> 56 & 0xFF) << 24),
+                .accessed = e >> 40 & 1 != 0,
+                .writable = e >> 41 & 1 != 0,
+                .direction = @intToEnum(Self.Direction, @intCast(u1, e >> 42 & 1)),
+                .dpl = @intCast(u2, e >> 45 & 0b11),
+                .present = e >> 47 & 1 != 0,
+                .available_to_system_programmers = e >> 52 & 1 != 0,
+                .big = e >> 54 & 1 != 0,
+                .granularity = @intToEnum(Self.Granularity, @intCast(u1, e >> 55 & 1))
+            };
         }
     };
 
@@ -81,6 +96,21 @@ const Entry = union(enum) {
                 | u64(@enumToInt(self.granularity)) << 55
                 | u64(self.base >> 24 & 0xFF) << 56;
         }
+
+        fn unpack(e: u64) Self {
+            return Self{
+                .limit = @intCast(u20, e >> 0 & 0xFFFF | (e >> 48 & 0xF) << 16),
+                .base = @intCast(u32, e >> 16 & 0xFFFFFF | (e >> 56 & 0xFF) << 24),
+                .accessed = e >> 40 & 1 != 0,
+                .readable = e >> 41 & 1 != 0,
+                .conforming = e >> 42 & 1 != 0,
+                .dpl = @intCast(u2, e >> 45 & 0b11),
+                .present = e >> 47 & 1 != 0,
+                .available_to_system_programmers = e >> 52 & 1 != 0,
+                .mode = @intToEnum(Self.Mode, @intCast(u2, e >> 53 & 1)),
+                .granularity = @intToEnum(Self.Granularity, @intCast(u1, e >> 55 & 1))
+            };
+        }
     };
 
     const SystemS = struct {
@@ -119,6 +149,17 @@ const Entry = union(enum) {
                 | u64(@enumToInt(self.granularity)) << 55
                 | u64(self.base >> 24 & 0xFF) << 56;
         }
+
+        fn unpack(e: u64) Self {
+            return Self{
+                .limit = @intCast(u20, e >> 0 & 0xFFFF | (e >> 48 & 0xF) << 16),
+                .base = @intCast(u32, e >> 16 & 0xFFFFFF | (e >> 56 & 0xFF) << 24),
+                .type = @intToEnum(Self.Type, @intCast(u4, e >> 40 & 0b1111)),
+                .dpl = @intCast(u2, e >> 45 & 0b11),
+                .present = e >> 47 & 1 != 0,
+                .granularity = @intToEnum(Self.Granularity, @intCast(u1, e >> 55 & 1))
+            };
+        }
     };
 
     Data: Entry.DataS,
@@ -131,6 +172,20 @@ const Entry = union(enum) {
             Entry.Data => |x| x.pack(),
             Entry.System => |x| x.pack(),
         };
+    }
+
+    pub fn unpack(e: u64) Entry {
+        if (e >> 43 & 0b11 == 0b10) {
+            return Entry{ .Data = Entry.DataS.unpack(e) };
+        } else if (e >> 43 & 0b11 == 0b11) {
+            return Entry{ .Code = Entry.CodeS.unpack(e) };
+        } else {
+            return Entry{ .System = Entry.SystemS.unpack(e) };
+        }
+    }
+
+    pub fn isPresent(e: u64) bool {
+        return e >> 47 & 1 != 0;
     }
 };
 
