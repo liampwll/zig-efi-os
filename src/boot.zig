@@ -32,6 +32,7 @@ export fn EfiMain(img: uefi.Handle, sys: *uefi.SystemTable) uefi.Status {
     }
 
     postExitBootServices() catch unreachable;
+    _ = sys.boot_services.exit_boot_services(img, map_key);
 
     return @enumToInt(uefi.StatusValues.Success);
 }
