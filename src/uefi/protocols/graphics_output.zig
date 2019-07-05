@@ -53,8 +53,8 @@ pub const BltOperation = extern enum {
 
 pub const Protocol = extern struct {
     const Self = @This();
-    query_mode: extern fn(self: *Self, mode_num: u32, info_len: *usize, info: *[*]ModeInformation) Status,
-    set_mode: extern fn(self: *Self, mode_num: u32) Status,
+    queryMode: extern fn(self: *Self, mode_num: u32, info_len: *usize, info: *[*]ModeInformation) Status,
+    setMode: extern fn(self: *Self, mode_num: u32) Status,
     blt: extern fn(self: *Self, blt_buf: ?[*]BltPixel, blt_operation: BltOperation, src_x: usize, src_y: usize, dest_x: usize, dest_y: usize, width: usize, height: usize, delta: usize) Status,
     mode: *Mode,
 };

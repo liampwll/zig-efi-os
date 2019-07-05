@@ -14,6 +14,6 @@ pub const InputKey = extern struct {
 pub const Protocol = extern struct {
     const Self = @This();
     reset: extern fn (self: *Self, extendend_verification: bool) Status,
-    read_key_stroke: extern fn (self: *Self, key: *InputKey) Status,
-    wait_for_key: Event,
+    readKeyStroke: extern fn (self: *Self, key: *InputKey) Status,
+    waitForKey: Event,
 };

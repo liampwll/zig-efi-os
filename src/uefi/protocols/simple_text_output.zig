@@ -22,19 +22,19 @@ pub const Protocol = extern struct {
         return std.fmt.format(self, error{}, output, format, args);
     }
 
-    pub fn dumb_print(self: *Self, str: []const u8) void {
+    pub fn dumbPrint(self: *Self, str: []const u8) void {
         _ = output(self, str) catch unreachable;
     }
 
     reset: extern fn (self: *Self, extended_verification: bool) Status,
-    output_string: extern fn (self: *Self, string: [*]ucs2) Status,
-    test_string: extern fn (self: *Self, string: [*]ucs2) Status,
-    query_mode: extern fn (self: *Self, mode_num: usize, cols: *usize, rows: *usize) Status,
-    set_mode: extern fn (self: *Self, mode_num: usize) Status,
-    set_attribute: extern fn (self: *Self, attribute: usize) Status,
-    clear_screen: extern fn (self: *Self) Status,
-    set_cursor_position: extern fn (self: *Self, col: usize, row: usize) Status,
-    enable_cursor: extern fn (self: *Self, visible: bool) Status,
+    outputString: extern fn (self: *Self, string: [*]ucs2) Status,
+    testString: extern fn (self: *Self, string: [*]ucs2) Status,
+    queryMode: extern fn (self: *Self, mode_num: usize, cols: *usize, rows: *usize) Status,
+    setMode: extern fn (self: *Self, mode_num: usize) Status,
+    setAttribute: extern fn (self: *Self, attribute: usize) Status,
+    clearScreen: extern fn (self: *Self) Status,
+    setCursorPosition: extern fn (self: *Self, col: usize, row: usize) Status,
+    enableCursor: extern fn (self: *Self, visible: bool) Status,
     mode: *Mode,
 };
 

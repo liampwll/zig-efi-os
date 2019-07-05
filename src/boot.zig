@@ -27,22 +27,22 @@ export fn EfiMain(img: uefi.Handle, sys: *uefi.SystemTable) uefi.Status {
     var desc_version: u32 = undefined;
     var memory_map_size = usize(1);
     var memory_map: [*]uefi.MemoryDescriptor = undefined;
-    _ = sys.boot_services.allocate_pool(uefi.MemoryType.LoaderData,
-                                        @sizeOf(@typeOf(memory_map)) * memory_map_size,
-                                        @ptrCast(**c_void, &memory_map));
-    while (sys.boot_services.get_memory_map(&memory_map_size,
-                                            memory_map,
-                                            &map_key,
-                                            &desc_size,
-                                            &desc_version) != 0) {
-        _ = sys.boot_services.free_pool(memory_map);
+    _ = sys.boot_services.allocatePool(uefi.MemoryType.LoaderData,
+                                       @sizeOf(@typeOf(memory_map)) * memory_map_size,
+                                       @ptrCast(**c_void, &memory_map));
+    while (sys.boot_services.getMemoryMap(&memory_map_size,
+                                          memory_map,
+                                          &map_key,
+                                          &desc_size,
+                                          &desc_version) != 0) {
+        _ = sys.boot_services.freePool(memory_map);
         memory_map_size += 10;
-        _ = sys.boot_services.allocate_pool(uefi.MemoryType.LoaderData,
-                                            @sizeOf(@typeOf(memory_map)) * memory_map_size,
-                                            @ptrCast(**c_void, &memory_map));
+        _ = sys.boot_services.allocatePool(uefi.MemoryType.LoaderData,
+                                           @sizeOf(@typeOf(memory_map)) * memory_map_size,
+                                           @ptrCast(**c_void, &memory_map));
     }
 
-    _ = sys.boot_services.exit_boot_services(img, map_key);
+    _ = sys.boot_services.exitBootServices(img, map_key);
 
     postExitBootServices() catch |err| {
         _ = state.stdout.print("{}\n", err) catch void;
@@ -70,10 +70,10 @@ pub fn panic(msg: []const u8, error_return_trace: ?*builtin.StackTrace) noreturn
 }
 
 fn preExitBootServices() error{}!void {
-    _ = state.system_table.boot_services.set_watchdog_timer(0, 0, 0, null);
+    _ = state.system_table.boot_services.setWatchdogTimer(0, 0, 0, null);
 
     var gop: *uefi.protocols.graphics_output.Protocol = undefined;
-    _ = state.system_table.boot_services.locate_protocol(&uefi.protocols.graphics_output.guid, null, @ptrCast(*?*c_void, &gop));
+    _ = state.system_table.boot_services.locateProtocol(&uefi.protocols.graphics_output.guid, null, @ptrCast(*?*c_void, &gop));
 
     const frame = graphics.Frame{
         .info = gop.mode.info.*,
