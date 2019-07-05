@@ -189,7 +189,7 @@ pub const Entry = union(enum) {
     }
 };
 
-var our_gdt = []u64{
+pub var our_gdt = []u64{
     0,
     (Entry{ .Code = Entry.CodeS{
         .base = 0,
@@ -221,15 +221,7 @@ const Gdtr = extern struct {
     padding1: u32,
     padding2: u16,
     limit: u16,
-    // base: [*]align(@alignOf(u64)) Entry,
     base: [*]u64,
-};
-
-var our_gdtr = Gdtr{
-    .padding1 = 0,
-    .padding2 = 0,
-    .limit = @sizeOf(@typeOf(our_gdt)) - 1,
-    .base = &our_gdt
 };
 
 pub fn storeGdt() []u64 {
@@ -243,8 +235,17 @@ pub fn storeGdt() []u64 {
     return gdtr.base[0..((gdtr.limit + 1) / @sizeOf(u64))];
 }
 
-pub fn loadGdt() void {
-    loadGdtInternal(&our_gdtr, 1 * 8, 2 * 8);
+pub fn loadGdt(gdt: []u64, cs: usize, ds: usize) void {
+    const gdtr = Gdtr{
+        .padding1 = 0,
+        .padding2 = 0,
+        .limit = @intCast(u16, gdt.len * @sizeOf(@typeOf(gdt[0])) - 1),
+        .base = gdt.ptr
+    };
+
+    loadGdtInternal(&gdtr,
+                    @intCast(u16, cs * @sizeOf(@typeOf(gdt[0]))),
+                    @intCast(u16, ds * @sizeOf(@typeOf(gdt[0]))));
 }
 
 
@@ -252,4 +253,4 @@ const storeGdtInternal = gdt_storeGdtInternal;
 const loadGdtInternal = gdt_loadGdtInternal;
 
 extern fn gdt_storeGdtInternal(r: *Gdtr) void;
-extern fn gdt_loadGdtInternal(r: *Gdtr, cs: u16, ds: u16) void;
+extern fn gdt_loadGdtInternal(r: *const Gdtr, cs: u16, ds: u16) void;

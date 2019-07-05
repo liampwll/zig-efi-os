@@ -9,7 +9,18 @@ export fn EfiMain(img: uefi.Handle, sys: *uefi.SystemTable) uefi.Status {
     state.uefi_image = img;
     state.system_table = sys;
 
-    preExitBootServices() catch unreachable;
+    preExitBootServices() catch |err| {
+        _ = state.stdout.print("{}\n", err) catch void;
+
+        // TODO
+        // if (@errorReturnTrace()) |trace| {
+        //     std.debug.dumpStackTrace(trace.*);
+        // }
+
+        while (true) {
+            asm volatile ("hlt" :::);
+        }
+    };
 
     var map_key: usize = undefined;
     var desc_size: usize = undefined;
@@ -31,8 +42,20 @@ export fn EfiMain(img: uefi.Handle, sys: *uefi.SystemTable) uefi.Status {
                                             @ptrCast(**c_void, &memory_map));
     }
 
-    postExitBootServices() catch unreachable;
     _ = sys.boot_services.exit_boot_services(img, map_key);
+
+    postExitBootServices() catch |err| {
+        _ = state.stdout.print("{}\n", err) catch void;
+
+        // TODO
+        // if (@errorReturnTrace()) |trace| {
+        //     std.debug.dumpStackTrace(trace.*);
+        // }
+
+        while (true) {
+            asm volatile ("hlt" :::);
+        }
+    };
 
     return @enumToInt(uefi.StatusValues.Success);
 }
@@ -71,8 +94,10 @@ fn preExitBootServices() error{}!void {
 
 fn postExitBootServices() error{}!void {
     _ = state.stdout.print("old gdt len: {}\n", gdt.storeGdt().len) catch unreachable;
-    gdt.loadGdt();
+    gdt.loadGdt(gdt.our_gdt[0..], 1, 2);
     _ = state.stdout.print("new gdt len: {}\n", gdt.storeGdt().len) catch unreachable;
 
-    while (true) {}
+    while (true) {
+        asm volatile ("hlt" :::);
+    }
 }
